@@ -1,0 +1,5 @@
+# Untuk menjalankan pemantauan (python main.py)
+opencv-python>=4.8     # kamera, olah gambar, menggambar kotak
+numpy                  # olah data gambar
+onnxruntime            # menjalankan detektor wajah SCRFD & model masker (.onnx)
+pygame-ce              # memutar suara MP3 (di Windows ada cadangan bawaan bila tidak terpasang)
