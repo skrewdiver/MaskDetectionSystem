@@ -1,0 +1,20 @@
+{
+  "classes": [
+    "Correct_Surgical",
+    "Correct_N95",
+    "Correct_Cotton",
+    "Correct_Bandana",
+    "Incorrect_Surgical",
+    "Incorrect_N95",
+    "Incorrect_Cotton",
+    "Incorrect_Bandana"
+  ],
+  "input_size": 128,
+  "backbone": "mobilenetv2",
+  "preprocess": "RGB float32 0..255 (normalisasi di dalam model)",
+  "trained_at": "2026-10-23T17:07:35",
+  "dataset": "NewFace Mask Dataset (Mendeley 8pn3hg99t4 v2)",
+  "n_train": 17439,
+  "n_val": 3737,
+  "best_val_accuracy": 0.999197244644165
+}
