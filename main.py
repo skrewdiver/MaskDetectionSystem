@@ -91,3 +91,51 @@ def tebak_masker(model, wajah):
     else:
         peluang = np.asarray(model["keras"](data, training=False))[0]
     return {kelas: float(p) for kelas, p in zip(model["kelas"], peluang)}
+
+# 3. ATURAN KEPATUHAN & TIMER PERINGATAN
+
+def status_kelas(kelas):
+    """Contoh: 'Correct_N95' -> PATUH, 'Correct_Cotton' -> JENIS TIDAK SESUAI, 'Incorrect' -> SALAH PAKAI."""
+    if kelas == "No_Mask":
+        return TANPA_MASKER
+    if kelas.startswith("Incorrect"):            
+        return SALAH_PAKAI
+    jenis = kelas.split("_", 1)[1]                
+    return PATUH if jenis in config.JENIS_DIIZINKAN else JENIS_TIDAK_SESUAI
+
+
+def tentukan_status(peluang):
+    """Peluang kelas dengan status yang sama DIJUMLAHKAN, lalu status terbesar dipilih.
+    Mengembalikan (status, jenis_masker, keyakinan)."""
+    skor = {PATUH: 0.0, JENIS_TIDAK_SESUAI: 0.0, SALAH_PAKAI: 0.0, TANPA_MASKER: 0.0}
+    for kelas, p in peluang.items():
+        skor[status_kelas(kelas)] += p
+    status = max(skor, key=skor.get)
+    yakin = skor[status]
+    if yakin < config.KEYAKINAN_MIN:
+        return BELUM_PASTI, "-", yakin
+    if status in (SALAH_PAKAI, TANPA_MASKER):
+        return status, "-", yakin                  
+    kandidat = [k for k in peluang if status_kelas(k) == status]
+    jenis = max(kandidat, key=peluang.get).split("_", 1)[1]
+    return status, jenis, yakin
+
+
+def buat_timer():
+    return {"mulai": {}, "terakhir_terlihat": {}, "terakhir_bunyi": {}}
+
+
+def perbarui_timer(timer, status_terlihat, sekarang):
+    perlu_bunyi = []
+    for status in PELANGGARAN:
+        if status in status_terlihat:
+            timer["terakhir_terlihat"][status] = sekarang
+            timer["mulai"].setdefault(status, sekarang)
+            lama = sekarang - timer["mulai"][status]
+            sudah_jeda = sekarang - timer["terakhir_bunyi"].get(status, -1e9) >= config.JEDA_PERINGATAN
+            if lama >= config.BATAS_WAKTU and sudah_jeda:
+                timer["terakhir_bunyi"][status] = sekarang
+                perlu_bunyi.append(status)
+        elif status in timer["mulai"] and sekarang - timer["terakhir_terlihat"][status] > config.TOLERANSI:
+            del timer["mulai"][status]           
+    return perlu_bunyi
