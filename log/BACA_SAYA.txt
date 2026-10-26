@@ -1,2 +1,0 @@
-Folder bawaan untuk log. Saat sesi selesai Anda bisa memilih folder lain;
-jika dibatalkan, log (.csv) dan ringkasan (_ringkasan.txt) disimpan di sini.
